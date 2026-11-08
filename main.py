@@ -7,7 +7,7 @@ import fetch as fetch_module
 from fetch import fetch, fetch_page, get_acquisition
 from parse import parse_title, parse_acq
 
-THREADS = 12
+THREADS = 32
 
 # Парсинг Gran_Turismo_5/Car_List
 data = fetch({
@@ -47,7 +47,7 @@ else:
     pages = [None] * len(tasks)
 
 todo = [i for i, p in enumerate(pages) if p is None or p[1] is not None]
-print(f"{len(tasks)} tasks found, {len(todo)} to download\n{THREADS} threads available")
+print(f"{len(tasks)} tasks found, {len(todo)} to download\n{THREADS} threads available\nPages downloading...")
 
 fetch_module.total = len(todo)
 if todo:
@@ -58,7 +58,7 @@ if todo:
     with open(CACHE, "wb") as f:
         pickle.dump(pages, f)
 
-print(f"{len(pages)} pages downloaded")
+print(f"\n{len(pages)} pages downloaded")
 print(f"Parsing...")
 # Обработка страниц
 rows = []
@@ -77,13 +77,14 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             "credits": cr,
             "other_methods": om,
         })
-        print(f"{i}/{len(tasks)} {title}")
+        print(f"\r{i}/{len(tasks)} {title}", flush=True, end="")
     except Exception as e:
-        print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}")
+        print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}\n")
 
-print("Parsing complete")
+print("\nParsing complete")
 
 # Сохранение
 df = pd.DataFrame(rows).convert_dtypes()
+print(f"Total rows: {len(df)}")
 df.to_csv("gt5cars.csv", index=False, encoding="utf-8-sig")
 df.to_excel("gt5cars.xlsx", index=False)

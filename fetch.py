@@ -43,12 +43,12 @@ def fetch_page(title):
             "redirects": 1, "format": "json", "formatversion": 2,
         })
         res = data["parse"]["text"], None
-        time.sleep(0.1)
+        time.sleep(0.05)
     except Exception as e:
         res = None, repr(e)
     with done_lock:
         done += 1
-        print(f"{done}/{total}", flush=True)
+        print(f"\r{done}/{total}", flush=True, end="")
     return res
 
 

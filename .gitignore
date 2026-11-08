@@ -1,5 +1,6 @@
 .idea/
 .venv/
-gt5_cars.csv
-gt5_cars.xlsx
+gt5cars.csv
+gt5cars.xlsx
 __pycache__/
+pages.pkl

@@ -8,17 +8,31 @@ import threading
 API = "https://gran-turismo.fandom.com/api.php"
 HEADERS = {"User-Agent": "gt5-car-list/1.0 (your-email@example.com)"}
 done = 0
+total = 0
 done_lock = threading.Lock()
+local = threading.local()
+
+
+def get_session():
+    if not hasattr(local, "s"):
+        local.s = requests.Session()
+        local.s.headers.update(HEADERS)
+    return local.s
+
 
 def fetch(params):
     for attempt in range(5):
-        r = requests.get(API, headers=HEADERS, params=params, timeout=30)
-        if r.status_code == 429:
+        try:
+            r = get_session().get(API, params=params, timeout=30)
+        except requests.RequestException:
+            time.sleep(2 * (attempt + 1))
+            continue
+        if r.status_code == 429 or r.status_code >= 500:
             time.sleep(2 * (attempt + 1))
             continue
         r.raise_for_status()
         return r.json()
-    raise RuntimeError("429")
+    raise RuntimeError(f"429/5xx/сеть: не удалось после 5 попыток")
 
 
 def fetch_page(title):
@@ -28,14 +42,15 @@ def fetch_page(title):
             "action": "parse", "page": title, "prop": "text",
             "redirects": 1, "format": "json", "formatversion": 2,
         })
-        time.sleep(0.5)
         res = data["parse"]["text"], None
+        time.sleep(0.1)
     except Exception as e:
-        res = None, e
+        res = None, repr(e)
     with done_lock:
         done += 1
-        print(f"Скачано {done}", end="\r")
+        print(f"{done}/{total}", flush=True)
     return res
+
 
 def get_acquisition(html):
     page = BeautifulSoup(html, "lxml")

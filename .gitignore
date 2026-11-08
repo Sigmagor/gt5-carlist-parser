@@ -6,3 +6,6 @@ __pycache__/
 pages.pkl
 gt5_carlist_parser.exe
 icon.ico
+dist/
+build/
+gt5_carlist_parser.spec

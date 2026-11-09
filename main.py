@@ -105,4 +105,6 @@ if a == "2" or a == "3" or a == "1488":
     df.to_excel("gt5cars.xlsx", index=False)
     print("Saved as gt5cars.xlsx")
 if a != "1488":
+    print("Removing cache...")
     os.remove(CACHE)
+    print("Removed cache")

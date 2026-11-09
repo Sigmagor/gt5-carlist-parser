@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from io import StringIO
 import threading
+from parse import beautiful_print
 
 API = "https://gran-turismo.fandom.com/api.php"
 HEADERS = {"User-Agent": "gt5-car-list/1.0 (your-email@example.com)"}
@@ -11,7 +12,7 @@ done = 0
 total = 0
 done_lock = threading.Lock()
 local = threading.local()
-
+pr = []
 
 def get_session():
     if not hasattr(local, "s"):
@@ -48,7 +49,7 @@ def fetch_page(title):
         res = None, repr(e)
     with done_lock:
         done += 1
-        print(f"\r{done}/{total}", flush=True, end="")
+        beautiful_print(f"{done}/{total}", pr, 10)
     return res
 
 

@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 import fetch as fetch_module
 from fetch import fetch, fetch_page, get_acquisition
-from parse import parse_title, parse_acq
+from parse import parse_title, parse_acq, beautiful_print
 
 THREADS = 32
 
@@ -47,7 +47,9 @@ else:
     pages = [None] * len(tasks)
 
 todo = [i for i, p in enumerate(pages) if p is None or p[1] is not None]
-print(f"{len(tasks)} tasks found, {len(todo)} to download\n{THREADS} threads available\nPages downloading...")
+print(f"{len(tasks)} tasks found, {len(todo)} to download")
+if len(todo):
+    print(f"Downloading pages in {THREADS} threads...")
 
 fetch_module.total = len(todo)
 if todo:
@@ -58,8 +60,12 @@ if todo:
     with open(CACHE, "wb") as f:
         pickle.dump(pages, f)
 
-print(f"\n{len(pages)} pages downloaded")
+if len(todo) != len(pages):
+    print(f"Loaded pages from cache: {len(pages) - len(todo)}")
+if len(todo):
+    print(f"Downloaded pages from wiki: {len(todo)}")
 print(f"Parsing...")
+pr = []
 # Обработка страниц
 rows = []
 for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
@@ -77,14 +83,24 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             "credits": cr,
             "other_methods": om,
         })
-        print(f"\r{i}/{len(tasks)} {title}", flush=True, end="")
+        beautiful_print(f"{i}/{len(tasks)} {title}", pr, 10)
     except Exception as e:
         print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}\n")
+        pr = []
 
-print("\nParsing complete")
+print("Parsing complete")
 
 # Сохранение
 df = pd.DataFrame(rows).convert_dtypes()
 print(f"Total rows: {len(df)}")
-df.to_csv("gt5cars.csv", index=False, encoding="utf-8-sig")
-df.to_excel("gt5cars.xlsx", index=False)
+print("How to save: csv/xlsx/both? (1/2/3)")
+a = input()
+while a not in ("1", "2", "3"):
+    print("Incorrect input! Try again")
+    a = input()
+if a == "1" or a == "3":
+    df.to_csv("gt5cars.csv", index=False, encoding="utf-8-sig")
+    print("Saved as gt5cars.csv")
+if a == "2" or a == "3":
+    df.to_excel("gt5cars.xlsx", index=False)
+    print("Saved as gt5cars.xlsx")

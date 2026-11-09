@@ -49,7 +49,7 @@ def fetch_page(title):
         res = None, repr(e)
     with done_lock:
         done += 1
-        beautiful_print(f"{done}/{total}", pr, 10)
+        beautiful_print(f"{done}/{total}", pr, 8)
     return res
 
 

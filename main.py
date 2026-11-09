@@ -83,7 +83,7 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             "credits": cr,
             "other_methods": om,
         })
-        beautiful_print(f"{i}/{len(tasks)} {title}", pr, 10)
+        beautiful_print(f"{i}/{len(tasks)} {title}", pr, 8)
     except Exception as e:
         print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}\n")
         pr = []
@@ -95,12 +95,14 @@ df = pd.DataFrame(rows).convert_dtypes()
 print(f"Total rows: {len(df)}")
 print("How to save: csv/xlsx/both? (1/2/3)")
 a = input()
-while a not in ("1", "2", "3"):
+while a not in ("1", "2", "3", "1488"):
     print("Incorrect input! Try again")
     a = input()
-if a == "1" or a == "3":
+if a == "1" or a == "3" or a == "1488":
     df.to_csv("gt5cars.csv", index=False, encoding="utf-8-sig")
     print("Saved as gt5cars.csv")
-if a == "2" or a == "3":
+if a == "2" or a == "3" or a == "1488":
     df.to_excel("gt5cars.xlsx", index=False)
     print("Saved as gt5cars.xlsx")
+if a != "1488":
+    os.remove(CACHE)

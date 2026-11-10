@@ -5,7 +5,11 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 import fetch as fetch_module
 from fetch import fetch, fetch_page, get_acquisition
-from parse import parse_title, parse_acq, beautiful_print
+from parse import parse_title, parse_acq
+from utility import beautiful_print, enable_ansi_support, is_win10
+
+if is_win10():
+    enable_ansi_support()
 
 THREADS = 32
 
@@ -88,23 +92,24 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
         print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}\n")
         pr = []
 
-print("Parsing complete")
-
 # Сохранение
-df = pd.DataFrame(rows).convert_dtypes()
+print("Parsing complete")
+df = pd.DataFrame(rows)
+df["obtained"] = None
+df = df.convert_dtypes()
 print(f"Total rows: {len(df)}")
 print("How to save: csv/xlsx/both? (1/2/3)")
 a = input()
-while a not in ("1", "2", "3", "1488"):
+while a not in ("1", "2", "3", "279936"):
     print("Incorrect input! Try again")
     a = input()
-if a == "1" or a == "3" or a == "1488":
+if a == "1" or a == "3" or a == "279936":
     df.to_csv("gt5cars.csv", index=False, encoding="utf-8-sig")
     print("Saved as gt5cars.csv")
-if a == "2" or a == "3" or a == "1488":
+if a == "2" or a == "3" or a == "279936":
     df.to_excel("gt5cars.xlsx", index=False)
     print("Saved as gt5cars.xlsx")
-if a != "1488":
+if a != "279936":
     print("Removing cache...")
     os.remove(CACHE)
     print("Removed cache")

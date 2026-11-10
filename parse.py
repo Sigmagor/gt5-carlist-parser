@@ -70,14 +70,3 @@ def parse_acq(row, title):
     cr = parse_cr(row["Credits"], title)
     om = parse_om(row["Other methods"])
     return pl, cr, om
-
-
-def beautiful_print(s, pr, window):
-    if len(pr) < window:
-        print(s + "\033[K", flush=True)
-        pr.append(s + "\033[K")
-    else:
-        print(f"\033[{window}A", flush=True, end="")
-        del pr[0]
-        pr.append(s + "\033[K")
-        print(*pr, flush=True, sep="\n")

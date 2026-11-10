@@ -4,10 +4,10 @@ gt5cars.csv
 gt5cars.xlsx
 __pycache__/
 pages.pkl
-gt5_carlist_parser.exe
 icon.ico
 dist/
 build/
 gt5_carlist_parser.spec
 utility.txt
 utility.md
+test.py

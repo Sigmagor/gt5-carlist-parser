@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from io import StringIO
 import threading
-from parse import beautiful_print
+from utility import beautiful_print
 
 API = "https://gran-turismo.fandom.com/api.php"
 HEADERS = {"User-Agent": "gt5-car-list/1.0 (your-email@example.com)"}

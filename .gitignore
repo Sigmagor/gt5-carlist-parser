@@ -11,3 +11,8 @@ gt5_carlist_parser.spec
 utility.txt
 utility.md
 test.py
+aftermath.csv
+aftermath.py
+attributes.txt
+results.pkl
+tasks.pkl

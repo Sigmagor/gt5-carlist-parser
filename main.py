@@ -5,8 +5,9 @@ from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 import fetch as fetch_module
 from fetch import fetch, fetch_page, get_acquisition
-from parse import parse_title, parse_acq
+from parse import parse_title, parse_acq, parse_infobox
 from utility import beautiful_print, enable_ansi_support, is_win10
+import json
 
 if is_win10():
     enable_ansi_support()
@@ -76,20 +77,53 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
     try:
         if err:
             raise RuntimeError(err)
+        page = BeautifulSoup(html, "lxml")
+        for s in page.select(".mw-editsection"):
+            s.decompose()
         model, year, obt = parse_title(title, raw, brand)
-        pl, cr, om = parse_acq(get_acquisition(html), title)
+        pl, cr, om = parse_acq(get_acquisition(page), title)
+        dct = parse_infobox(page)
         rows.append({
             "brand": brand,
             "model": model,
-            "year": year,
             "obtainable": obt,
             "dealership": pl,
             "credits": cr,
             "other_methods": om,
+            # Production Info
+            "year": dct["Production Info"]["Year"],
+            "type": dct["Production Info"]["Type"],
+            "country": dct["Production Info"]["Country"],
+            # Engine and Power
+            "engine_code": dct["Engine and Power"]["Engine Code"],
+            "displacement": dct["Engine and Power"]["Displacement"],
+            "engine_type": dct["Engine and Power"]["Engine Type"],
+            "aspiration": dct["Engine and Power"]["Aspiration"],
+            "power": dct["Engine and Power"]["Power"],
+            "torque": dct["Engine and Power"]["Torque"],
+            "electric_system": dct["Engine and Power"]["Electric System"],
+            # Drivetrain and Weight
+            "layout": dct["Drivetrain and Weight"]["Layout"],
+            "Drivetrain": dct["Drivetrain and Weight"]["Drivetrain"],
+            "Gearbox": dct["Drivetrain and Weight"]["Gearbox"],
+            "Weight": dct["Drivetrain and Weight"]["Weight"],
+            "Balance": dct["Drivetrain and Weight"]["Balance"],
+            # Performance
+            "0-60_time": dct["Performance"]["0-60 Time"],
+            "Top Speed": dct["Performance"]["Top Speed"],
+            "Weight-to-Power Ratio": dct["Performance"]["Weight-to-Power Ratio"],
+            "PP in GT5/6": dct["Performance"]["PP in GT5/6"],
+            "Class": dct["Performance"]["Class"],
+            # Dimensions
+            "Length": dct["Dimensions"]["Length"],
+            "Width": dct["Dimensions"]["Width"],
+            "Height": dct["Dimensions"]["Height"],
+            # Miscellaneous
+            "GT5 Type": dct["Miscellaneous"]["GT5 Type"]
         })
         beautiful_print(f"{i}/{len(tasks)} {title}", pr, 8)
     except Exception as e:
-        print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}\n")
+        # print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}")
         pr = []
 
 # Сохранение

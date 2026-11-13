@@ -49,14 +49,11 @@ def fetch_page(title):
         res = None, repr(e)
     with done_lock:
         done += 1
-        beautiful_print(f"{done}/{total}", pr, 8)
+        beautiful_print(f"{done}/{total} {title}", pr, 8)
     return res
 
 
-def get_acquisition(html):
-    page = BeautifulSoup(html, "lxml")
-    for s in page.select(".mw-editsection"):
-        s.decompose()
+def get_acquisition(page):
     for t in page.find_all("table"):
         heads = {th.get_text(" ", strip=True).lower() for th in t.find_all("th")}
         if "purchase location" not in heads:
@@ -65,5 +62,5 @@ def get_acquisition(html):
         game = df["Game"].astype(str).str.strip()
         mask = game.str.startswith("Gran Turismo 5") & ~game.str.contains("Prologue")
         df = df[mask]
-        if len(df) > 0: return df.iloc[0]
-    raise ValueError("таблица GT5 не найдена")
+        if len(df) > 0: break
+    return df.iloc[0]

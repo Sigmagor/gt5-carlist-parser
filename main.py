@@ -8,14 +8,12 @@ import fetch as fetch_module
 from fetch import fetch, fetch_page, get_acq
 from parse import parse_title, parse_acq, parse_infobox
 from utility import beautiful_print, enable_ansi_support, is_win10
-import json
 
 if is_win10():
     enable_ansi_support()
 
 THREADS = 32
 
-# Парсинг Gran_Turismo_5/Car_List
 data = fetch({
     "action": "parse", "page": "Gran_Turismo_5/Car_List",
     "prop": "text", "format": "json", "formatversion": 2,
@@ -24,7 +22,6 @@ soup = BeautifulSoup(data["parse"]["text"], "lxml")
 for s in soup.select(".mw-editsection"):
     s.decompose()
 
-# Список страниц для запросов
 print("Creating tasks")
 print("\033[32m", end="")
 bp = []
@@ -44,25 +41,20 @@ for table in soup.find_all("table"):
         cnt += 1
         beautiful_print(f"{cnt}: {a.get("title")}", bp, 4)
         tasks.append((brand, a.get("title"), raw))
-
 print("\033[0m", end="")
-print(*tasks, sep="\n")
-# Многопоточные запросы с кэшированием
+
 titles = [t[1] for t in tasks]
 CACHE = "pages.pkl"
-
 if os.path.exists(CACHE):
     with open(CACHE, "rb") as f:
         pages = pickle.load(f)
 else:
     pages = [None] * len(tasks)
-
 todo = [i for i, p in enumerate(pages) if p is None or p[1]]
 print(f"{len(tasks)} tasks found, {len(todo)} to download")
 if len(todo):
     print(f"Downloading pages in {THREADS} threads...")
     print("\033[32m", end="")
-
 fetch_module.total = len(todo)
 if todo:
     with ThreadPoolExecutor(max_workers=THREADS) as ex:
@@ -71,15 +63,14 @@ if todo:
         pages[i] = res
     with open(CACHE, "wb") as f:
         pickle.dump(pages, f)
-
 print("\033[0m", end="")
 if len(todo) != len(pages):
     print(f"Loaded pages from cache: {len(pages) - len(todo)}")
 if len(todo):
     print(f"Downloaded pages from wiki: {len(todo)}")
+
 print(f"Parsing...")
 print("\033[32m", end="")
-# Обработка страниц
 bp = []
 rows = []
 for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
@@ -90,53 +81,52 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
         for s in page.select(".mw-editsection"):
             s.decompose()
         model, obtainable = parse_title(title, raw, brand)
-        purchase_location, credits, other_methods = parse_acq(get_acq(page), title)
+        dealership, credits, other_methods = parse_acq(get_acq(page), title)
         dct = parse_infobox(page, title)
         rows.append({
-            "brand": brand,
-            "model": model,
-            "obtainable": obtainable,
-            "dealership": purchase_location,
-            "credits": credits,
-            "other_methods": other_methods,
+            "brand":                    brand,
+            "model":                    model,
+            "obtainable":               obtainable,
+            "dealership":               dealership,
+            "credits":                  credits,
+            "other_methods":            other_methods,
             # Production Info
-            "year": dct["Production Info"]["Year"],
-            "type": dct["Production Info"]["Type"],
-            "country": dct["Production Info"]["Country"],
+            "year":                     dct["Production Info"]["Year"],
+            "type":                     dct["Production Info"]["Type"],
+            "country":                  dct["Production Info"]["Country"],
             # Engine and Power
-            "engine_code": dct["Engine and Power"]["Engine Code"],
-            "displacement": dct["Engine and Power"]["Displacement"],
-            "engine_type": dct["Engine and Power"]["Engine Type"],
-            "aspiration": dct["Engine and Power"]["Aspiration"],
-            "power": dct["Engine and Power"]["Power"],
-            "torque": dct["Engine and Power"]["Torque"],
-            "electric_system": dct["Engine and Power"]["Electric System"],
+            "engine_code":              dct["Engine and Power"]["Engine Code"],
+            "displacement":             dct["Engine and Power"]["Displacement"],
+            "engine_type":              dct["Engine and Power"]["Engine Type"],
+            "aspiration":               dct["Engine and Power"]["Aspiration"],
+            "power":                    dct["Engine and Power"]["Power"],
+            "torque":                   dct["Engine and Power"]["Torque"],
+            "electric_system":          dct["Engine and Power"]["Electric System"],
             # Drivetrain and Weight
-            "layout": dct["Drivetrain and Weight"]["Layout"],
-            "drivetrain": dct["Drivetrain and Weight"]["Drivetrain"],
-            "gearbox": dct["Drivetrain and Weight"]["Gearbox"],
-            "weight": dct["Drivetrain and Weight"]["Weight"],
-            "balance": dct["Drivetrain and Weight"]["Balance"],
+            "layout":                   dct["Drivetrain and Weight"]["Layout"],
+            "drivetrain":               dct["Drivetrain and Weight"]["Drivetrain"],
+            "gearbox":                  dct["Drivetrain and Weight"]["Gearbox"],
+            "weight":                   dct["Drivetrain and Weight"]["Weight"],
+            "balance":                  dct["Drivetrain and Weight"]["Balance"],
             # Performance
-            "0-60_time": dct["Performance"]["0-60 Time"],
-            "top_speed": dct["Performance"]["Top Speed"],
-            "weight-to-power_ratio": dct["Performance"]["Weight-to-Power Ratio"],
-            "pp": dct["Performance"]["PP in GT5/6"],
-            "class": dct["Performance"]["Class"],
+            "0-60_time":                dct["Performance"]["0-60 Time"],
+            "top_speed":                dct["Performance"]["Top Speed"],
+            "weight-to-power_ratio":    dct["Performance"]["Weight-to-Power Ratio"],
+            "pp":                       dct["Performance"]["PP in GT5/6"],
+            "class":                    dct["Performance"]["Class"],
             # Dimensions
-            "length": dct["Dimensions"]["Length"],
-            "width": dct["Dimensions"]["Width"],
-            "height": dct["Dimensions"]["Height"],
+            "length":                   dct["Dimensions"]["Length"],
+            "width":                    dct["Dimensions"]["Width"],
+            "height":                   dct["Dimensions"]["Height"],
             # Miscellaneous
-            "gt5type": dct["Miscellaneous"]["GT5 Type"]
+            "gt5type":                  dct["Miscellaneous"]["GT5 Type"]
         })
         beautiful_print(f"{i}/{len(tasks)} {title}", bp, 4)
     except Exception as e:
-        print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}")
-        bp = []
+        print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}" + "\n" * 3)
 print("\033[0m", end="")
-# Сохранение
 print("Parsing complete")
+
 df = pd.DataFrame(rows)
 df["obtained"] = None
 df = df.convert_dtypes()
@@ -159,4 +149,4 @@ if a != "279936":
 for i in range(5, 0, -1):
     print(f"\rClosing in {i} seconds...", end="")
     time.sleep(1)
-print("\rClosing...\033[K")
+print("\rClosing...\033[K", end="")

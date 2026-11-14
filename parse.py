@@ -7,12 +7,12 @@ def parse_year(y):
 
 
 def parse_title(title: str, raw: str, brand: str):
-    if title.startswith(brand):
+    if title.lower().startswith(brand.lower() + " "):
         model = title[len(brand):]
     else:
         model = title
-    apo = title.rfind("'")
-    if apo != -1 and title[apo + 1].isdigit() and title[apo + 2].isdigit():
+    apo = model.rfind("'")
+    if apo != -1 and model[apo + 1].isdigit() and model[apo + 2].isdigit():
         model = model[:apo] + model[apo + 3:]
     model = model.strip()
     obt = True
@@ -133,8 +133,7 @@ def parse_engine(fields: dict) -> dict:
         if "kgf·m" in line:
             line = float(line.replace("kgf·m", "").strip())
         else:
-            line = float(line.replace("lb·ft", "").strip())
-            line *= .138255
+            line = round(float(line.replace("lb·ft", "").strip()) * .138255, 2)
         fields["Torque"] = line
     else:
         fields["Torque"] = None

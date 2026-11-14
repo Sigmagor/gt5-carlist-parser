@@ -46,6 +46,7 @@ for table in soup.find_all("table"):
         tasks.append((brand, a.get("title"), raw))
 
 print("\033[0m", end="")
+print(*tasks, sep="\n")
 # Многопоточные запросы с кэшированием
 titles = [t[1] for t in tasks]
 CACHE = "pages.pkl"
@@ -88,16 +89,16 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
         page = BeautifulSoup(html, "lxml")
         for s in page.select(".mw-editsection"):
             s.decompose()
-        model, obt = parse_title(title, raw, brand)
-        pl, cr, om = parse_acq(get_acq(page), title)
+        model, obtainable = parse_title(title, raw, brand)
+        purchase_location, credits, other_methods = parse_acq(get_acq(page), title)
         dct = parse_infobox(page, title)
         rows.append({
             "brand": brand,
             "model": model,
-            "obtainable": obt,
-            "dealership": pl,
-            "credits": cr,
-            "other_methods": om,
+            "obtainable": obtainable,
+            "dealership": purchase_location,
+            "credits": credits,
+            "other_methods": other_methods,
             # Production Info
             "year": dct["Production Info"]["Year"],
             "type": dct["Production Info"]["Type"],
@@ -112,22 +113,22 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             "electric_system": dct["Engine and Power"]["Electric System"],
             # Drivetrain and Weight
             "layout": dct["Drivetrain and Weight"]["Layout"],
-            "Drivetrain": dct["Drivetrain and Weight"]["Drivetrain"],
-            "Gearbox": dct["Drivetrain and Weight"]["Gearbox"],
-            "Weight": dct["Drivetrain and Weight"]["Weight"],
-            "Balance": dct["Drivetrain and Weight"]["Balance"],
+            "drivetrain": dct["Drivetrain and Weight"]["Drivetrain"],
+            "gearbox": dct["Drivetrain and Weight"]["Gearbox"],
+            "weight": dct["Drivetrain and Weight"]["Weight"],
+            "balance": dct["Drivetrain and Weight"]["Balance"],
             # Performance
             "0-60_time": dct["Performance"]["0-60 Time"],
-            "Top Speed": dct["Performance"]["Top Speed"],
-            "Weight-to-Power Ratio": dct["Performance"]["Weight-to-Power Ratio"],
-            "PP in GT5/6": dct["Performance"]["PP in GT5/6"],
-            "Class": dct["Performance"]["Class"],
+            "top_speed": dct["Performance"]["Top Speed"],
+            "weight-to-power_ratio": dct["Performance"]["Weight-to-Power Ratio"],
+            "pp": dct["Performance"]["PP in GT5/6"],
+            "class": dct["Performance"]["Class"],
             # Dimensions
-            "Length": dct["Dimensions"]["Length"],
-            "Width": dct["Dimensions"]["Width"],
-            "Height": dct["Dimensions"]["Height"],
+            "length": dct["Dimensions"]["Length"],
+            "width": dct["Dimensions"]["Width"],
+            "height": dct["Dimensions"]["Height"],
             # Miscellaneous
-            "GT5 Type": dct["Miscellaneous"]["GT5 Type"]
+            "gt5type": dct["Miscellaneous"]["GT5 Type"]
         })
         beautiful_print(f"{i}/{len(tasks)} {title}", bp, 4)
     except Exception as e:
@@ -158,3 +159,4 @@ if a != "279936":
 for i in range(5, 0, -1):
     print(f"\rClosing in {i} seconds...", end="")
     time.sleep(1)
+print("\rClosing...\033[K")

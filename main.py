@@ -143,9 +143,9 @@ if a == "2" or a == "3" or a == "279936":
     df.to_excel("gt5cars.xlsx", index=False)
     print("Saved as gt5cars.xlsx")
 if a != "279936":
-    print("Removing cache...")
+    print("Removing cache...", end="")
     os.remove(CACHE)
-    print("Removed cache")
+    print("\rRemoved cache\033[K")
 for i in range(5, 0, -1):
     print(f"\rClosing in {i} seconds...", end="")
     time.sleep(1)

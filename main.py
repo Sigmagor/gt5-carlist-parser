@@ -1,3 +1,4 @@
+# pyinstaller --onefile --name gt5_carlist_parser --icon .\icon.ico .\main.py
 import os
 import pickle
 import time

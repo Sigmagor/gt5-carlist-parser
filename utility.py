@@ -3,15 +3,15 @@ import platform
 import ctypes
 
 
-def beautiful_print(s, pr, window):
-    if len(pr) < window:
+def beautiful_print(s, bp, window):
+    if len(bp) < window:
         print(s)
-        pr.append(s + "\033[K")
+        bp.append(s + "\033[K")
     else:
         print(f"\033[{window}A", flush=True, end="")
-        del pr[0]
-        pr.append(s + "\033[K")
-        print(*pr, flush=True, sep="\n")
+        del bp[0]
+        bp.append(s + "\033[K")
+        print(*bp, flush=True, sep="\n")
 
 
 def is_win10():

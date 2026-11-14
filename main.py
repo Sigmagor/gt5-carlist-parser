@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 import pandas as pd
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
@@ -24,6 +25,10 @@ for s in soup.select(".mw-editsection"):
     s.decompose()
 
 # Список страниц для запросов
+print("Creating tasks")
+print("\033[32m", end="")
+bp = []
+cnt = 0
 tasks = []
 for table in soup.find_all("table"):
     headers = [th.get_text(strip=True) for th in table.find_all("th")]
@@ -36,9 +41,11 @@ for table in soup.find_all("table"):
             continue
         raw = td.get_text(" ", strip=True)
         a = td.find("a", href=True)
+        cnt += 1
+        beautiful_print(f"{cnt}: {a.get("title")}", bp, 4)
         tasks.append((brand, a.get("title"), raw))
 
-# print(*tasks, sep="\n")
+print("\033[0m", end="")
 # Многопоточные запросы с кэшированием
 titles = [t[1] for t in tasks]
 CACHE = "pages.pkl"
@@ -53,6 +60,7 @@ todo = [i for i, p in enumerate(pages) if p is None or p[1]]
 print(f"{len(tasks)} tasks found, {len(todo)} to download")
 if len(todo):
     print(f"Downloading pages in {THREADS} threads...")
+    print("\033[32m", end="")
 
 fetch_module.total = len(todo)
 if todo:
@@ -63,13 +71,15 @@ if todo:
     with open(CACHE, "wb") as f:
         pickle.dump(pages, f)
 
+print("\033[0m", end="")
 if len(todo) != len(pages):
     print(f"Loaded pages from cache: {len(pages) - len(todo)}")
 if len(todo):
     print(f"Downloaded pages from wiki: {len(todo)}")
 print(f"Parsing...")
-pr = []
+print("\033[32m", end="")
 # Обработка страниц
+bp = []
 rows = []
 for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
     try:
@@ -119,14 +129,11 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             # Miscellaneous
             "GT5 Type": dct["Miscellaneous"]["GT5 Type"]
         })
-        pr.append(dct["Performance"]["Weight-to-Power Ratio"])
-        # beautiful_print(f"{i}/{len(tasks)} {title}", pr, 8)
+        beautiful_print(f"{i}/{len(tasks)} {title}", bp, 4)
     except Exception as e:
         print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}")
-        pr = []
-
-pr.sort()
-print(*pr, sep="\n")
+        bp = []
+print("\033[0m", end="")
 # Сохранение
 print("Parsing complete")
 df = pd.DataFrame(rows)
@@ -148,3 +155,6 @@ if a != "279936":
     print("Removing cache...")
     os.remove(CACHE)
     print("Removed cache")
+for i in range(5, 0, -1):
+    print(f"\rClosing in {i} seconds...", end="")
+    time.sleep(1)

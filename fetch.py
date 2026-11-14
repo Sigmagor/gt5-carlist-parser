@@ -7,6 +7,7 @@ from utility import beautiful_print
 
 API = "https://gran-turismo.fandom.com/api.php"
 HEADERS = {"User-Agent": "gt5-car-list/1.0 (your-email@example.com)"}
+DELAY = 0.03
 done = 0
 total = 0
 done_lock = threading.Lock()
@@ -44,12 +45,12 @@ def fetch_page(title):
             "redirects": 1, "format": "json", "formatversion": 2,
         })
         res = data["parse"]["text"], None
-        time.sleep(0.05)
+        time.sleep(DELAY)
     except Exception as e:
         res = None, repr(e)
     with done_lock:
         done += 1
-        beautiful_print(f"{done}/{total} {title}", pr, 8)
+        beautiful_print(f"{done}/{total} {title}", pr, 4)
     return res
 
 

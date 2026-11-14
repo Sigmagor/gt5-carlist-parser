@@ -218,7 +218,7 @@ def parse_performance(fields: dict, title: str) -> dict:
     if "PP in GT7" in fields:
         del fields["PP in GT7"]
     if "Class" in fields:
-        if "GT Sport only" in fields:
+        if "GT Sport only" in fields["Class"]:
             fields["Class"] = None
     else:
         fields["Class"] = None

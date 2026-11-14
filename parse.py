@@ -137,8 +137,8 @@ def parse_engine(fields: dict) -> dict:
         fields["Torque"] = line
     else:
         fields["Torque"] = None
-    if "Electric System" not in fields:
-        fields["Electric System"] = None
+    if "Electric System" in fields:
+        del fields["Electric System"]
     return fields
 
 
@@ -217,10 +217,7 @@ def parse_performance(fields: dict, title: str) -> dict:
     if "PP in GT7" in fields:
         del fields["PP in GT7"]
     if "Class" in fields:
-        if "GT Sport only" in fields["Class"]:
-            fields["Class"] = None
-    else:
-        fields["Class"] = None
+        del fields["Class"]
     return fields
 
 

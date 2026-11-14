@@ -101,7 +101,6 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             "aspiration":               dct["Engine and Power"]["Aspiration"],
             "power":                    dct["Engine and Power"]["Power"],
             "torque":                   dct["Engine and Power"]["Torque"],
-            "electric_system":          dct["Engine and Power"]["Electric System"],
             # Drivetrain and Weight
             "layout":                   dct["Drivetrain and Weight"]["Layout"],
             "drivetrain":               dct["Drivetrain and Weight"]["Drivetrain"],
@@ -111,9 +110,8 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             # Performance
             "0-60_time":                dct["Performance"]["0-60 Time"],
             "top_speed":                dct["Performance"]["Top Speed"],
-            "weight-to-power_ratio":    dct["Performance"]["Weight-to-Power Ratio"],
+            "wtp_ratio":                dct["Performance"]["Weight-to-Power Ratio"],
             "pp":                       dct["Performance"]["PP in GT5/6"],
-            "class":                    dct["Performance"]["Class"],
             # Dimensions
             "length":                   dct["Dimensions"]["Length"],
             "width":                    dct["Dimensions"]["Width"],

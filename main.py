@@ -1,4 +1,6 @@
-# pyinstaller --onefile --name gt5_carlist_parser --icon .\icon.ico .\main.py
+"""
+pyinstaller --onefile --name gt5_carlist_parser --icon .\icon.ico .\main.py
+"""
 import os
 import pickle
 import time
@@ -85,40 +87,40 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
         dealership, credits, other_methods = parse_acq(get_acq(page), title)
         dct = parse_infobox(page, title)
         rows.append({
-            "brand":                    brand,
-            "model":                    model,
-            "obtainable":               obtainable,
-            "dealership":               dealership,
-            "credits":                  credits,
-            "other_methods":            other_methods,
+            "brand": brand,
+            "model": model,
+            "obtainable": obtainable,
+            "dealership": dealership,
+            "credits": credits,
+            "other_methods": other_methods,
             # Production Info
-            "year":                     dct["Production Info"]["Year"],
-            "type":                     dct["Production Info"]["Type"],
-            "country":                  dct["Production Info"]["Country"],
+            "year": dct["Production Info"]["Year"],
+            "type": dct["Production Info"]["Type"],
+            "country": dct["Production Info"]["Country"],
             # Engine and Power
-            "engine_code":              dct["Engine and Power"]["Engine Code"],
-            "displacement":             dct["Engine and Power"]["Displacement"],
-            "engine_type":              dct["Engine and Power"]["Engine Type"],
-            "aspiration":               dct["Engine and Power"]["Aspiration"],
-            "power":                    dct["Engine and Power"]["Power"],
-            "torque":                   dct["Engine and Power"]["Torque"],
+            "engine_code": dct["Engine and Power"]["Engine Code"],
+            "displacement": dct["Engine and Power"]["Displacement"],
+            "engine_type": dct["Engine and Power"]["Engine Type"],
+            "aspiration": dct["Engine and Power"]["Aspiration"],
+            "power": dct["Engine and Power"]["Power"],
+            "torque": dct["Engine and Power"]["Torque"],
             # Drivetrain and Weight
-            "layout":                   dct["Drivetrain and Weight"]["Layout"],
-            "drivetrain":               dct["Drivetrain and Weight"]["Drivetrain"],
-            "gearbox":                  dct["Drivetrain and Weight"]["Gearbox"],
-            "weight":                   dct["Drivetrain and Weight"]["Weight"],
-            "balance":                  dct["Drivetrain and Weight"]["Balance"],
+            "layout": dct["Drivetrain and Weight"]["Layout"],
+            "drivetrain": dct["Drivetrain and Weight"]["Drivetrain"],
+            "gearbox": dct["Drivetrain and Weight"]["Gearbox"],
+            "weight": dct["Drivetrain and Weight"]["Weight"],
+            "balance": dct["Drivetrain and Weight"]["Balance"],
             # Performance
-            "0-60_time":                dct["Performance"]["0-60 Time"],
-            "top_speed":                dct["Performance"]["Top Speed"],
-            "wtp_ratio":                dct["Performance"]["Weight-to-Power Ratio"],
-            "pp":                       dct["Performance"]["PP in GT5/6"],
+            "0-60_time": dct["Performance"]["0-60 Time"],
+            "top_speed": dct["Performance"]["Top Speed"],
+            "wtp_ratio": dct["Performance"]["Weight-to-Power Ratio"],
+            "pp": dct["Performance"]["PP in GT5/6"],
             # Dimensions
-            "length":                   dct["Dimensions"]["Length"],
-            "width":                    dct["Dimensions"]["Width"],
-            "height":                   dct["Dimensions"]["Height"],
+            "length": dct["Dimensions"]["Length"],
+            "width": dct["Dimensions"]["Width"],
+            "height": dct["Dimensions"]["Height"],
             # Miscellaneous
-            "gt5type":                  dct["Miscellaneous"]["GT5 Type"]
+            "gt5type": dct["Miscellaneous"]["GT5 Type"]
         })
         beautiful_print(f"{i}/{len(tasks)} {title}", bp, 4)
     except Exception as e:
@@ -132,7 +134,7 @@ df = df.convert_dtypes()
 print(f"Total rows: {len(df)}")
 print("How to save: csv/xlsx/both? (1/2/3)")
 a = input()
-while a not in ("1", "2", "3", "279936"): # 279936 = 6^7
+while a not in ("1", "2", "3", "279936"):  # 279936 = 6^7
     print("Incorrect input! Try again")
     a = input()
 if a == "1" or a == "3" or a == "279936":

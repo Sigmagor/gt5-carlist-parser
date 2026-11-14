@@ -2,10 +2,6 @@ def clean(text: str) -> str:
     return " ".join(text.replace("\xa0", " ").split())
 
 
-def parse_year(y):
-    return 2000 + y if y <= 20 else 1900 + y
-
-
 def parse_title(title: str, raw: str, brand: str):
     if title.lower().startswith(brand.lower() + " "):
         model = title[len(brand):]

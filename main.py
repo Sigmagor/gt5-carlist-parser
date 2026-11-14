@@ -131,7 +131,7 @@ df = df.convert_dtypes()
 print(f"Total rows: {len(df)}")
 print("How to save: csv/xlsx/both? (1/2/3)")
 a = input()
-while a not in ("1", "2", "3", "279936"):
+while a not in ("1", "2", "3", "279936"): # 279936 = 6^7
     print("Incorrect input! Try again")
     a = input()
 if a == "1" or a == "3" or a == "279936":

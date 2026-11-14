@@ -7,7 +7,7 @@ from utility import beautiful_print
 
 API = "https://gran-turismo.fandom.com/api.php"
 HEADERS = {"User-Agent": "gt5-car-list/1.0 (your-email@example.com)"}
-DELAY = 0.03
+DELAY = 0.04
 done = 0
 total = 0
 done_lock = threading.Lock()

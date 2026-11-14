@@ -1,9 +1,8 @@
-import requests
-import time
-from bs4 import BeautifulSoup
-import pandas as pd
-from io import StringIO
 import threading
+import time
+from io import StringIO
+import pandas as pd
+import requests
 from utility import beautiful_print
 
 API = "https://gran-turismo.fandom.com/api.php"
@@ -13,6 +12,7 @@ total = 0
 done_lock = threading.Lock()
 local = threading.local()
 pr = []
+
 
 def get_session():
     if not hasattr(local, "s"):
@@ -53,7 +53,7 @@ def fetch_page(title):
     return res
 
 
-def get_acquisition(page):
+def get_acq(page):
     for t in page.find_all("table"):
         heads = {th.get_text(" ", strip=True).lower() for th in t.find_all("th")}
         if "purchase location" not in heads:

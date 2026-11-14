@@ -7,19 +7,13 @@ def parse_year(y):
 
 
 def parse_title(title: str, raw: str, brand: str):
-    model, year, obt = None, None, None
-
     if title.startswith(brand):
         model = title[len(brand):]
     else:
         model = title
-
-    if title[:2] == "20":
-        year = int(title[:4])
-    elif title.rfind("'") != -1 and title[title.rfind("'") + 1:title.rfind("'") + 3].isdigit():
-        apo_ind = title.rfind("'")
-        year = parse_year(int(title[apo_ind + 1:apo_ind + 3]))
-        model = model[:model.rfind("'")] + model[model.rfind("'") + 3:]
+    apo = title.rfind("'")
+    if apo != -1 and title[apo + 1].isdigit() and title[apo + 2].isdigit():
+        model = model[:apo] + model[apo + 3:]
     model = model.strip()
     obt = True
     if "(DLC)" in raw:
@@ -28,7 +22,7 @@ def parse_title(title: str, raw: str, brand: str):
     if "Car no longer obtainable" in raw:
         obt = False
 
-    return model, year, obt
+    return model, obt
 
 
 def parse_pl(pl):
@@ -171,7 +165,7 @@ def parse_drivetrain(fields: dict) -> dict:
     return fields
 
 
-def parse_performance(fields: dict) -> dict:
+def parse_performance(fields: dict, title: str) -> dict:
     if "Top Speed" in fields:
         line = fields["Top Speed"]
         if "mph" in line:
@@ -182,13 +176,37 @@ def parse_performance(fields: dict) -> dict:
     else:
         fields["Top Speed"] = None
     if "Weight-to-Power Ratio" in fields:
-        # преобразовать lb/bhp в kg/PS
-        pass
+        line = fields["Weight-to-Power Ratio"]
+        if "kg/bhp" in line:
+            line = round(float(line.replace("kg/bhp", "").strip()) * 1.01387, 2)
+        elif "lb./PS" in line:
+            line = round(float(line.replace("lb./PS", "").strip()) * 0.453592, 2)
+        elif "lb./bhp" in line:
+            line = round(float(line.replace("lb./bhp", "").strip()) * 0.45988, 2)
+        else:
+            line = float(line.replace("kg/PS", "").strip())
+        fields["Weight-to-Power Ratio"] = line
     else:
         fields["Weight-to-Power Ratio"] = None
     if "PP in GT5/6" in fields:
-        # обработать исключения с mazda mx-5 и nissan fairlady z
-        pass
+        if "(" in fields["PP in GT5/6"]:
+            line = fields["PP in GT5/6"].split(" ")
+            first = int(line[0])
+            for i in range(1, len(line)):
+                if line[i].isdigit():
+                    second = int(line[i])
+                    break
+            if (
+                    "Eunos Roadster" in title or
+                    "Mazda RX-7 GT-X (FC) '90" in title or
+                    "Fairlady Z" in title or
+                    "Clio" in title
+            ):
+                fields["PP in GT5/6"] = first
+            else:
+                fields["PP in GT5/6"] = second
+        else:
+            fields["PP in GT5/6"] = int(fields["PP in GT5/6"])
     else:
         fields["PP in GT5/6"] = None
     if "0-60 Time" in fields:
@@ -209,7 +227,7 @@ def parse_performance(fields: dict) -> dict:
 
 def parse_dimensions(fields):
     for key in fields.keys():
-        fields[key] = float(clean(fields[key].replace(",", ".").replace("mm", "").strip()))
+        fields[key] = int(clean(fields[key].replace(",", "").replace("mm", "").strip()))
     for attr in ("Length", "Width", "Height"):
         if attr not in fields:
             fields[attr] = None
@@ -226,9 +244,8 @@ def parse_miscellaneous(fields):
     return fields
 
 
-def parse_infobox(page):
+def parse_infobox(page, title):
     infobox = page.find("aside", class_="portable-infobox")
-    title = clean(infobox.find("h2", class_="pi-title").get_text())
     if title == "Mazda DEMIO GL-X '99":
         infobox = page.find_all("aside", class_="portable-infobox")[-1]
     result = {}
@@ -255,7 +272,7 @@ def parse_infobox(page):
         elif section_name == "Drivetrain and Weight":
             fields = parse_drivetrain(fields)
         elif section_name == "Performance":
-            fields = parse_performance(fields)
+            fields = parse_performance(fields, title)
         elif section_name == "Dimensions":
             fields = parse_dimensions(fields)
         elif section_name == "Miscellaneous":

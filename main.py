@@ -4,7 +4,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 import fetch as fetch_module
-from fetch import fetch, fetch_page, get_acquisition
+from fetch import fetch, fetch_page, get_acq
 from parse import parse_title, parse_acq, parse_infobox
 from utility import beautiful_print, enable_ansi_support, is_win10
 import json
@@ -36,11 +36,9 @@ for table in soup.find_all("table"):
             continue
         raw = td.get_text(" ", strip=True)
         a = td.find("a", href=True)
-        if a is None or not a.get("title"):
-            print(f"Skip: {raw}")
-            continue
         tasks.append((brand, a.get("title"), raw))
 
+# print(*tasks, sep="\n")
 # Многопоточные запросы с кэшированием
 titles = [t[1] for t in tasks]
 CACHE = "pages.pkl"
@@ -51,7 +49,7 @@ if os.path.exists(CACHE):
 else:
     pages = [None] * len(tasks)
 
-todo = [i for i, p in enumerate(pages) if p is None or p[1] is not None]
+todo = [i for i, p in enumerate(pages) if p is None or p[1]]
 print(f"{len(tasks)} tasks found, {len(todo)} to download")
 if len(todo):
     print(f"Downloading pages in {THREADS} threads...")
@@ -80,9 +78,9 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
         page = BeautifulSoup(html, "lxml")
         for s in page.select(".mw-editsection"):
             s.decompose()
-        model, year, obt = parse_title(title, raw, brand)
-        pl, cr, om = parse_acq(get_acquisition(page), title)
-        dct = parse_infobox(page)
+        model, obt = parse_title(title, raw, brand)
+        pl, cr, om = parse_acq(get_acq(page), title)
+        dct = parse_infobox(page, title)
         rows.append({
             "brand": brand,
             "model": model,
@@ -121,11 +119,14 @@ for i, ((brand, title, raw), (html, err)) in enumerate(zip(tasks, pages), 1):
             # Miscellaneous
             "GT5 Type": dct["Miscellaneous"]["GT5 Type"]
         })
-        beautiful_print(f"{i}/{len(tasks)} {title}", pr, 8)
+        pr.append(dct["Performance"]["Weight-to-Power Ratio"])
+        # beautiful_print(f"{i}/{len(tasks)} {title}", pr, 8)
     except Exception as e:
-        # print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}")
+        print(f"{i}/{len(tasks)} Ошибка {raw}: {e!r}")
         pr = []
 
+pr.sort()
+print(*pr, sep="\n")
 # Сохранение
 print("Parsing complete")
 df = pd.DataFrame(rows)
